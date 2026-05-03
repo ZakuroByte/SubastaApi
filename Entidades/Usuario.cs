@@ -17,10 +17,14 @@ namespace SubastaApi.Entidades
         [Required]
         public required string ApellidoMaterno { get; set; }
         public int? Calificacion { get; set; }
-        [Required]
-        public required int CveTipoUsuario { get; set; }
+        public int CveTipoUsuario { get; set; }
 
-        public TipoUsuario? TipoUsuario { get; set; }
-        
+        public TipoUsuario? TipoUsuarioRef { get; set; }
+        public ICollection<Producto> Productos { get; set; } = [];
+        public ICollection<Oferta> Ofertas { get; set; } = [];
+        public ICollection<Subasta> Subastas { get; set; } = [];
+        public ICollection<Notificacion> Notificaciones { get; set; } = [];
+        public ICollection<Calificacion> CalificacionesRecibidas { get; set; } = [];
+        public ICollection<Calificacion> CalificacionesDadas { get; set; } = [];
     }
 }

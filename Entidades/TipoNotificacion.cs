@@ -2,10 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SubastaApi.Entidades
 {
-    public class TIpoNotificaion
+    public class TipoNotificacion
     {
-        public int IdIdentificacion { get; set; }
+        public int IdTipoNotificacion { get; set; }
         [Required]
         public required string Descripcion { get; set; }
+        public ICollection<Notificacion> Notificaciones { get; set; } = [];
     }
 }

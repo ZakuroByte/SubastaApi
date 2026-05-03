@@ -7,5 +7,8 @@ namespace SubastaApi.Entidades
         public int IdFoto { get; set; }
         [Required]
         public required string Url { get; set; }
+        public int CveProducto { get; set; }
+        
+        public Producto? ProductoRef { get; set; }
     }
 }

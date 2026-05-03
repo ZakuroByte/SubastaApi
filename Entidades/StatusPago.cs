@@ -7,5 +7,7 @@ namespace SubastaApi.Entidades
         public int IdStatusPago { get; set; }
         [Required]
         public required string Descripcion { get; set; }
+
+        public ICollection<Pago> Pagos { get; set; } = [];
     }
 }

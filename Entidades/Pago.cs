@@ -5,14 +5,13 @@ namespace SubastaApi.Entidades
     public class Pago
     {
         public int IdPago { get; set; }
-        [Required]
-        public required float Monto { get; set; }
-        [Required]
-        public required DateTime FechaLimite { get; set; }
+        public float Monto { get; set; }
+        public DateTime FechaLimite { get; set; }
         public DateTime? FechaRealizacion { get; set; }
-        [Required]
-        public required int CveSubasta { get; set; }
-        [Required]
-        public required int CveStuatus { get; set; }
+        public int CveSubasta { get; set; }
+        public int CveStuatusPago { get; set; }
+
+        public Subasta? SubastaRef { get; set; }
+        public StatusPago? StatusPagoRef { get; set; }
     }
 }

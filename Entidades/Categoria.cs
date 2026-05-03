@@ -7,5 +7,7 @@ namespace SubastaApi.Entidades
         public int IdCategoria { get; set; }
         [Required]
         public required string Descripcion { get; set; }
+
+        public ICollection<Producto> Productos { get; set; } = [];
     }
 }

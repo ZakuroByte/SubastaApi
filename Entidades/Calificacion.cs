@@ -5,18 +5,16 @@ namespace SubastaApi.Entidades
     public class Calificacion
     {
         public int IdCalificacion { get; set; }
-        [Required]
         [Range(0,5)]
-        public required int Estrellas { get; set; }
-        [Required]
-        public required string Comentario { get; set; }
-        [Required]
-        public required DateTime Fecha { get; set; }
-        [Required]
-        public required int CveUsuarioCalificado { get; set; }
-        [Required]
-        public required int CveUsuarioCalificador { get; set; }
-        [Required]
-        public required int CveSubasta { get; set; }
+        public int Estrellas { get; set; }
+        public string? Comentario { get; set; }
+        public DateTime Fecha { get; set; }
+        public  int CveUsuarioCalificado { get; set; }
+        public  int CveUsuarioCalificador { get; set; }
+        public  int CveSubasta { get; set; }
+
+        public Usuario? UsuarioCalificado { get; set; }
+        public Usuario? UsuarioCalificador { get; set; }
+        public Subasta? SubastaRef { get; set; }
     }
 }

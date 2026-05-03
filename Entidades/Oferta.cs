@@ -5,13 +5,13 @@ namespace SubastaApi.Entidades
     public class Oferta
     {
         public int IdOferta { get; set; }
-        [Required]
-        public required DateTime Fecha { get; set; }
-        [Required]
-        public required float Monto { get; set; }
-        [Required]
-        public required int CveUsuario { get; set; }
-        [Required]
-        public required int CveSubasta { get; set; }
+        public  DateTime Fecha { get; set; }
+        public float Monto { get; set; }
+        public int CveUsuario { get; set; }
+        public int CveSubasta { get; set; }
+
+        public Usuario? UsuarioRef { get; set; }
+        public Subasta? SubastaRef { get; set; }
+        public ICollection<Notificacion> Notificaciones { get; set; } = [];
     }
 }

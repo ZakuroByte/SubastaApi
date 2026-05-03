@@ -9,15 +9,13 @@ namespace SubastaApi.Entidades
         public required string Marca { get; set; }
         [Required]
         public required string Modelo { get; set; }
-        [Required]
-        public required int Anio { get; set; }
-        [Required]
-        public required float Kilometraje { get; set; }
-        [Required]
-        public required int NumeroSerie { get; set; }
+        public int Anio { get; set; }
+        public float Kilometraje { get; set; }
+        public int NumeroSerie { get; set; }
         [Required]
         public required string UrlDocumentacion { get; set; }
-        [Required]
-        public required int CveProducto { get; set; }
+        public int CveProducto { get; set; }
+
+        public Producto? ProductoRef { get; set; }
     }
 }
