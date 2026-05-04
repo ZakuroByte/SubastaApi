@@ -320,3 +320,5 @@
 /home/nagisa/Documents/Escuela/ADS/SubastaApi/obj/Debug/net10.0/SubastaApi.MvcApplicationPartsAssemblyInfo.cs
 /home/nagisa/Documents/Escuela/ADS/SubastaApi/obj/Debug/net10.0/SubastaApi.sourcelink.json
 /home/nagisa/Documents/Escuela/ADS/SubastaApi/obj/Debug/net10.0/SubastaApi.csproj.Up2Date
+/home/zakuro/Documentos/Escuela/ADS/SubastaApi/bin/Debug/net10.0/BCrypt.Net-Next.dll
+/home/zakuro/Documentos/Escuela/ADS/SubastaApi/bin/Debug/net10.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
