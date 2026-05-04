@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SubastaApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d4675d67ac17a086ba65667e7738447bcd45567c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ecf737d0aa06038cbbfa3ec3636cc115cf977f9e")]
 [assembly: System.Reflection.AssemblyProductAttribute("SubastaApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SubastaApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
