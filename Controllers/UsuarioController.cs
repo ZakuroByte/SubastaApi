@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SubastaApi.Entidades;
 using SubastaApi.Data;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SubastaApi.Controllers
 {
@@ -16,6 +17,7 @@ namespace SubastaApi.Controllers
             _context = context;
         }
 
+        [Authorize]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Usuario>> Get(int id)
         {
@@ -27,6 +29,20 @@ namespace SubastaApi.Controllers
             }
 
             return autor;
+        }
+
+        [Authorize]
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, Usuario usuario)
+        {
+            if(id != usuario.IdUsuario)
+            {
+                return BadRequest("Los ids deben coincidir");
+            }
+
+            _context.Update(usuario);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }
