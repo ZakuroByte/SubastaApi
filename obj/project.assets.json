@@ -3614,19 +3614,19 @@
     ]
   },
   "packageFolders": {
-    "/home/zakuro/.nuget/packages/": {}
+    "/home/kaworu/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/zakuro/Documentos/Escuela/ADS/SubastaApi/SubastaApi.csproj",
+      "projectUniqueName": "/home/kaworu/Documents/Escuela/ADS/SubastaApi/SubastaApi.csproj",
       "projectName": "SubastaApi",
-      "projectPath": "/home/zakuro/Documentos/Escuela/ADS/SubastaApi/SubastaApi.csproj",
-      "packagesPath": "/home/zakuro/.nuget/packages/",
-      "outputPath": "/home/zakuro/Documentos/Escuela/ADS/SubastaApi/obj/",
+      "projectPath": "/home/kaworu/Documents/Escuela/ADS/SubastaApi/SubastaApi.csproj",
+      "packagesPath": "/home/kaworu/.nuget/packages/",
+      "outputPath": "/home/kaworu/Documents/Escuela/ADS/SubastaApi/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/zakuro/.nuget/NuGet/NuGet.Config"
+        "/home/kaworu/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
