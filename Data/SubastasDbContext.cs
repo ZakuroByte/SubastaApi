@@ -237,6 +237,33 @@ namespace SubastaApi.Data
                 .HasForeignKey<Vehiculo>(c => c.CveProducto)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Oferta
+            modelBuilder.Entity<Oferta>()
+                .Property(o => o.Monto)
+                .HasPrecision(18, 2);
+
+            // Pago
+            modelBuilder.Entity<Pago>()
+                .Property(p => p.Monto)
+                .HasPrecision(18, 2);
+
+            // Subasta
+            modelBuilder.Entity<Subasta>()
+                .Property(s => s.PrecioInicial)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Subasta>()
+                .Property(s => s.PrecioActual)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Subasta>()
+                .Property(s => s.Incremento)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Subasta>()
+                .Property(s => s.Decremento)
+                .HasPrecision(18, 2);
+
             modelBuilder.Entity<TipoUsuario>().HasData(
                 new TipoUsuario { IdTipoUsuario = 1, Descripcion = "Administrador" },
                 new TipoUsuario { IdTipoUsuario = 2, Descripcion = "Vendedor" },

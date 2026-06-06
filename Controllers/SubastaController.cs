@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SubastaApi.Data;
+using SubastaApi.DTOs;
 using SubastaApi.Entidades;
 
 namespace SubastaApi.Controllers
@@ -10,10 +11,12 @@ namespace SubastaApi.Controllers
     public class SubastaController : ControllerBase
     {
         private readonly SubastaDbContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public SubastaController(SubastaDbContext context)
+        public SubastaController(SubastaDbContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET api/subasta
@@ -82,56 +85,131 @@ namespace SubastaApi.Controllers
             return Ok(subastas);
         }
 
-        // POST api/subasta
-        [HttpPost]
-        public async Task<ActionResult> Post(Subasta subasta)
+        // POST api/subasta/crear
+        [HttpPost("crear")]
+        public async Task<ActionResult> Crear([FromForm] CrearSubastaDto dto, IWebHostEnvironment env)
         {
-            // Verificar que el producto existe y está disponible
-            var producto = await _context.Productos.FindAsync(subasta.CveProducto);
+            // Verificar que el usuario existe
+            var usuario = await _context.Usuarios.FindAsync(dto.CveUsuario);
+            if (usuario is null)
+                return NotFound("Usuario no encontrado");
 
-            if (producto is null)
-                return NotFound("Producto no encontrado");
-
-            if (producto.CveStatusProducto != 1)
-                return BadRequest("El producto no está disponible para subastarse");
-
-            // Validaciones por tipo de subasta
-            // Inglesa (1) y Sellada (3): necesitan precio inicial
-            if (subasta.CveTipoSubasta == 1 || subasta.CveTipoSubasta == 3)
+            // 1. Crear el producto
+            var producto = new Producto
             {
-                if (subasta.PrecioInicial <= 0)
-                    return BadRequest("La subasta requiere un precio inicial válido");
-            }
+                Nombre = dto.Nombre,
+                Descripcion = dto.Descripcion,
+                Ubicacion = dto.Ubicacion,
+                CveCategoria = dto.CveCategoria,
+                CveCondicion = dto.CveCondicion,
+                CveUsuario = dto.CveUsuario,
+                CveStatusProducto = 2 // En Subasta directo
+            };
 
-            // Holandesa (2): necesita precio inicial alto y precio actual como mínimo
-            if (subasta.CveTipoSubasta == 2)
-            {
-                if (subasta.PrecioInicial <= 0)
-                    return BadRequest("La subasta holandesa requiere un precio inicial válido");
-
-                if (subasta.PrecioActual <= 0 || subasta.PrecioActual >= subasta.PrecioInicial)
-                    return BadRequest("El precio mínimo debe ser mayor a 0 y menor al precio inicial");
-
-                subasta.PrecioActual = subasta.PrecioInicial;
-            }
-
-            // Status inicial: Pendiente
-            subasta.CveStatusSubasta = 1;
-            subasta.CveUsuarioGanador = null;
-
-            // En inglesa el precio actual arranca igual al inicial
-            if (subasta.CveTipoSubasta == 1)
-                subasta.PrecioActual = subasta.PrecioInicial;
-
-            _context.Subastas.Add(subasta);
-
-            // Cambiar status del producto a En Subasta
-            producto.CveStatusProducto = 2;
-            _context.Update(producto);
-
+            _context.Productos.Add(producto);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Get), new { id = subasta.IdSubasta }, subasta);
+            // 2. Guardar fotos si vienen
+            if (dto.Fotos != null && dto.Fotos.Count > 0)
+            {
+                var extensionesPermitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                var carpeta = Path.Combine(env.WebRootPath, "fotos", producto.IdProducto.ToString());
+
+                if (!Directory.Exists(carpeta))
+                    Directory.CreateDirectory(carpeta);
+
+                foreach (var foto in dto.Fotos)
+                {
+                    var extension = Path.GetExtension(foto.FileName).ToLower();
+
+                    if (!extensionesPermitidas.Contains(extension))
+                        continue; // Omite archivos no válidos
+
+                    if (foto.Length > 5 * 1024 * 1024)
+                        continue; // Omite archivos mayores a 5MB
+
+                    var nombreArchivo = $"{Guid.NewGuid()}{extension}";
+                    var rutaCompleta = Path.Combine(carpeta, nombreArchivo);
+
+                    using var stream = new FileStream(rutaCompleta, FileMode.Create);
+                    await foto.CopyToAsync(stream);
+
+                    _context.FotosProducto.Add(new FotoProducto
+                    {
+                        Url = $"/fotos/{producto.IdProducto}/{nombreArchivo}",
+                        CveProducto = producto.IdProducto
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            // 3. Guardar datos de vehículo si aplica
+            if (dto.CveCategoria == 1 && dto.Marca != null)
+            {
+                _context.Vehiculos.Add(new Vehiculo
+                {
+                    Marca = dto.Marca,
+                    Modelo = dto.Modelo!,
+                    Anio = dto.Anio ?? 0,
+                    Kilometraje = dto.Kilometraje ?? 0,
+                    NumeroSerie = dto.NumeroSerie ?? 0,
+                    UrlDocumentacion = dto.UrlDocumentacionVehiculo ?? "",
+                    CveProducto = producto.IdProducto
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            // 4. Guardar datos de inmueble si aplica
+            if (dto.CveCategoria == 2 && dto.SuperficieTerreno != null)
+            {
+                _context.Inmuebles.Add(new Inmueble
+                {
+                    SuperficieTerreno = (int)(dto.SuperficieTerreno ?? 0),
+                    SuperficieConstruida = (int)(dto.SuperficieConstruida ?? 0),
+                    NumeroHabitaciones = dto.NumeroHabitaciones ?? 0,
+                    UrlDocumentacion = dto.UrlDocumentacionInmueble ?? "",
+                    CveProducto = producto.IdProducto
+                });
+
+                await _context.SaveChangesAsync();
+            }
+
+            // 5. Crear la subasta
+            var subasta = new Subasta
+            {
+                PrecioInicial = dto.PrecioInicial,
+                PrecioActual = dto.CveTipoSubasta == 2
+                    ? dto.PrecioInicial          // holandesa arranca en el precio inicial
+                    : dto.PrecioInicial,         // inglesa y sellada igual
+                Incremento = dto.Incremento,
+                FechaInicio = dto.FechaInicio,
+                FechaFinal = dto.FechaFinal,
+                CveTipoSubasta = dto.CveTipoSubasta,
+                CveProducto = producto.IdProducto,
+                CveStatusSubasta = 1,            // Pendiente
+                CveUsuarioGanador = null
+            };
+
+            // Validaciones por tipo
+            if (dto.CveTipoSubasta == 1 && dto.Incremento == null)
+                return BadRequest("La subasta inglesa requiere un incremento mínimo");
+
+            if (dto.CveTipoSubasta == 2 && dto.PrecioMinimo == null)
+                return BadRequest("La subasta holandesa requiere un precio mínimo");
+
+            if (dto.CveTipoSubasta == 2)
+                subasta.PrecioActual = dto.PrecioMinimo!.Value;
+
+            _context.Subastas.Add(subasta);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Get), new { id = subasta.IdSubasta }, new
+            {
+                subasta.IdSubasta,
+                producto.IdProducto
+            });
         }
 
         // PUT api/subasta/1 — editar antes de iniciar

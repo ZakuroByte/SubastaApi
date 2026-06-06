@@ -71,19 +71,6 @@ namespace SubastaApi.Controllers
             return Ok(productos);
         }
 
-        // POST api/producto
-        [HttpPost]
-        public async Task<ActionResult> Post(Producto producto)
-        {
-            // El status inicial siempre es Disponible al crear
-            producto.CveStatusProducto = 1;
-
-            _context.Productos.Add(producto);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(Get), new { id = producto.IdProducto }, producto);
-        }
-
         // PUT api/producto/1
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, Producto producto)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SubastaApi.Data;
+using SubastaApi.DTOs;
 using SubastaApi.Entidades;
 
 namespace SubastaApi.Controllers
@@ -187,13 +188,13 @@ namespace SubastaApi.Controllers
             return NoContent();
         }
 
-        // POST api/oferta/aceptar — Solo para subasta Holandesa
+        // POST api/oferta/aceptar
         [HttpPost("aceptar")]
-        public async Task<ActionResult> AceptarPrecioHolandesa([FromBody] int idSubasta, [FromBody] int idUsuario)
+        public async Task<ActionResult> AceptarPrecioHolandesa([FromBody] AceptarOfertaDto dto)
         {
             var subasta = await _context.Subastas
                 .Include(s => s.ProductoRef)
-                .FirstOrDefaultAsync(s => s.IdSubasta == idSubasta);
+                .FirstOrDefaultAsync(s => s.IdSubasta == dto.IdSubasta);
 
             if (subasta is null)
                 return NotFound("Subasta no encontrada");
@@ -210,23 +211,20 @@ namespace SubastaApi.Controllers
             if (DateTime.UtcNow >= subasta.FechaFinal)
                 return BadRequest("El tiempo de la subasta ha terminado");
 
-            // Crear la oferta con el precio actual
             var oferta = new Oferta
             {
                 Monto = subasta.PrecioActual,
                 Fecha = DateTime.UtcNow,
-                CveUsuario = idUsuario,
-                CveSubasta = idSubasta
+                CveUsuario = dto.IdUsuario,
+                CveSubasta = dto.IdSubasta
             };
 
             _context.Ofertas.Add(oferta);
 
-            // Finalizar subasta inmediatamente
-            subasta.CveUsuarioGanador = idUsuario;
-            subasta.CveStatusSubasta = 3; // Finalizada
-            subasta.ProductoRef!.CveStatusProducto = 3; // Vendido
+            subasta.CveUsuarioGanador = dto.IdUsuario;
+            subasta.CveStatusSubasta = 3;
+            subasta.ProductoRef!.CveStatusProducto = 3;
 
-            // Calcular tiempo límite de pago
             int horasPago = 48;
 
             bool esVehiculo = await _context.Vehiculos
@@ -238,30 +236,25 @@ namespace SubastaApi.Controllers
             if (esVehiculo) horasPago = 72;
             if (esInmueble) horasPago = 168;
 
-            // Crear pago
-            var pago = new Pago
+            _context.Pagos.Add(new Pago
             {
                 Monto = subasta.PrecioActual,
                 FechaRealizacion = DateTime.UtcNow,
                 FechaLimite = DateTime.UtcNow.AddHours(horasPago),
                 CveStatusPago = 1,
                 CveSubasta = subasta.IdSubasta
-            };
+            });
 
-            _context.Pagos.Add(pago);
-
-            // Notificar al ganador
             _context.Notificaciones.Add(new Notificacion
             {
                 Descripcion = $"¡Compraste el producto! Tienes {horasPago} horas para realizar el pago.",
                 FechaEnvio = DateTime.UtcNow,
                 Leida = false,
-                CveUsuario = idUsuario,
+                CveUsuario = dto.IdUsuario,
                 CveTipoNotificacion = 3,
                 CveSubasta = subasta.IdSubasta
             });
 
-            // Notificar al vendedor
             _context.Notificaciones.Add(new Notificacion
             {
                 Descripcion = $"¡Tu producto fue comprado por {subasta.PrecioActual}! El comprador tiene {horasPago} horas para pagar.",

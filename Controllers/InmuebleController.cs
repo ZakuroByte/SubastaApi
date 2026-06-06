@@ -33,29 +33,6 @@ namespace SubastaApi.Controllers
             return Ok(inmueble);
         }
 
-        // POST api/inmueble
-        [HttpPost]
-        public async Task<ActionResult> Post(Inmueble inmueble)
-        {
-            // Verificar que el producto existe
-            var producto = await _context.Productos.FindAsync(inmueble.CveProducto);
-
-            if (producto is null)
-                return NotFound("Producto no encontrado");
-
-            // Verificar que el producto no tenga ya un inmueble asociado
-            bool yaExiste = await _context.Inmuebles
-                .AnyAsync(i => i.CveProducto == inmueble.CveProducto);
-
-            if (yaExiste)
-                return BadRequest("Este producto ya tiene un inmueble asociado");
-
-            _context.Inmuebles.Add(inmueble);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetByProducto), new { idProducto = inmueble.CveProducto }, inmueble);
-        }
-
         // PUT api/inmueble/1
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Put(int id, Inmueble inmueble)
