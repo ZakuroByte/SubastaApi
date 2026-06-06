@@ -47,6 +47,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<SubastaHolandesaService>();
 builder.Services.AddHostedService<SubastaFinalizadorService>();
 builder.Services.AddHostedService<PagoVencidoService>();
+builder.Services.AddHostedService<SubastaInicioService>();
 
 var app = builder.Build();
 

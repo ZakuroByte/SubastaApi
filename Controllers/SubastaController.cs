@@ -373,5 +373,27 @@ namespace SubastaApi.Controllers
 
             return NoContent();
         }
+
+        // PUT api/subasta/1/iniciar
+        [HttpPut("{id:int}/iniciar")]
+        public async Task<ActionResult> Iniciar(int id)
+        {
+            var subasta = await _context.Subastas.FindAsync(id);
+
+            if (subasta is null)
+                return NotFound();
+
+            if (subasta.CveStatusSubasta != 1)
+                return BadRequest("Solo se puede iniciar una subasta con status Pendiente");
+
+            if (DateTime.UtcNow < subasta.FechaInicio)
+                return BadRequest($"La subasta no puede iniciar antes de su fecha programada: {subasta.FechaInicio}");
+
+            subasta.CveStatusSubasta = 2; // Activa
+            _context.Update(subasta);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

@@ -72,6 +72,14 @@ namespace SubastaApi.Controllers
             if (DateTime.UtcNow >= subasta.FechaFinal)
                 return BadRequest("El tiempo de la subasta ha terminado");
 
+            // Verificar que el usuario no sea el vendedor del producto
+            var esVendedor = await _context.Productos
+                .AnyAsync(p => p.IdProducto == subasta.CveProducto &&
+                               p.CveUsuario == oferta.CveUsuario);
+
+            if (esVendedor)
+                return BadRequest("El vendedor no puede ofertar en su propia subasta");
+
             // No permitir ofertar en subasta holandesa desde este endpoint
             if (subasta.CveTipoSubasta == 2)
                 return BadRequest("Para subastas holandesas usa el endpoint api/oferta/aceptar");
@@ -206,6 +214,14 @@ namespace SubastaApi.Controllers
             // Verificar que esté activa
             if (subasta.CveStatusSubasta != 2)
                 return BadRequest("La subasta no está activa");
+
+            // Verificar que el usuario no sea el vendedor del producto
+            var esVendedor = await _context.Productos
+                .AnyAsync(p => p.IdProducto == subasta.CveProducto &&
+                               p.CveUsuario == dto.IdUsuario);
+
+            if (esVendedor)
+                return BadRequest("El vendedor no puede comprar su propio producto");
 
             // Verificar que no haya terminado
             if (DateTime.UtcNow >= subasta.FechaFinal)
