@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SubastaApi.Data;
 
@@ -11,9 +12,11 @@ using SubastaApi.Data;
 namespace SubastaApi.Migrations
 {
     [DbContext(typeof(SubastaDbContext))]
-    partial class SubastaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260606052312_addDecremento")]
+    partial class addDecremento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -282,8 +285,8 @@ namespace SubastaApi.Migrations
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Monto")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("Monto")
+                        .HasColumnType("real");
 
                     b.HasKey("IdOferta");
 
@@ -314,8 +317,8 @@ namespace SubastaApi.Migrations
                     b.Property<DateTime?>("FechaRealizacion")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal>("Monto")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("Monto")
+                        .HasColumnType("real");
 
                     b.HasKey("IdPago");
 
@@ -516,17 +519,14 @@ namespace SubastaApi.Migrations
                     b.Property<DateTime>("FechaInicio")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("Incremento")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("IntervaloMinutos")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("PrecioActual")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("PrecioActual")
+                        .HasColumnType("real");
 
-                    b.Property<decimal>("PrecioInicial")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<float>("PrecioInicial")
+                        .HasColumnType("real");
 
                     b.HasKey("IdSubasta");
 

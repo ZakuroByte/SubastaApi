@@ -134,7 +134,7 @@ namespace SubastaApi.Data
             modelBuilder.Entity<Pago>()
                 .HasOne(c => c.StatusPagoRef)
                 .WithMany(s => s.Pagos)
-                .HasForeignKey(c => c.CveStuatusPago)
+                .HasForeignKey(c => c.CveStatusPago)
                 .OnDelete(DeleteBehavior.Restrict);
 
             //Producto

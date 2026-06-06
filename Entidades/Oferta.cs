@@ -6,7 +6,7 @@ namespace SubastaApi.Entidades
     {
         public int IdOferta { get; set; }
         public  DateTime Fecha { get; set; }
-        public float Monto { get; set; }
+        public decimal Monto { get; set; }
         public int CveUsuario { get; set; }
         public int CveSubasta { get; set; }
 
