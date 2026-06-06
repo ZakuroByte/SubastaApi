@@ -26,7 +26,6 @@ namespace SubastaApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            // 1. Buscar usuario por correo
             var usuario = await _context.Usuarios
                 .Include(u => u.TipoUsuarioRef)
                 .FirstOrDefaultAsync(u => u.Correo == loginDto.Correo);
@@ -34,37 +33,68 @@ namespace SubastaApi.Controllers
             if (usuario == null)
                 return Unauthorized("Credenciales incorrectas");
 
-            // 2. Verificar contraseña encriptada
             bool passwordValida = BCrypt.Net.BCrypt.Verify(loginDto.Contrasenia, usuario.Contrasenia);
 
             if (!passwordValida)
                 return Unauthorized("Credenciales incorrectas");
 
-            // 3. Generar token
             string token = GenerarToken(usuario);
 
-            return Ok(new { token });
+            return Ok(new
+            {
+                token,
+                usuario = new UsuarioRespuestaDto
+                {
+                    IdUsuario = usuario.IdUsuario,
+                    Correo = usuario.Correo,
+                    Nombre = usuario.Nombre,
+                    ApellidoPaterno = usuario.ApellidoPaterno,
+                    ApellidoMaterno = usuario.ApellidoMaterno,
+                    Calificacion = usuario.Calificacion,
+                    CveTipoUsuario = usuario.CveTipoUsuario,
+                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? ""
+                }
+            });
         }
 
         [HttpPost("registro")]
         public async Task<IActionResult> Registro([FromBody] Usuario usuario)
         {
-            // Verificar si el correo ya existe
             bool correoExiste = await _context.Usuarios
                 .AnyAsync(u => u.Correo == usuario.Correo);
 
             if (correoExiste)
                 return BadRequest("El correo ya está registrado");
 
-            // Encriptar contraseña antes de guardar
             usuario.Contrasenia = BCrypt.Net.BCrypt.HashPassword(usuario.Contrasenia);
 
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
 
-            return Ok("Usuario registrado correctamente");
+            // Cargar el tipo de usuario para la respuesta
+            await _context.Entry(usuario)
+                .Reference(u => u.TipoUsuarioRef)
+                .LoadAsync();
+
+            string token = GenerarToken(usuario);
+
+            return Ok(new
+            {
+                token,
+                usuario = new UsuarioRespuestaDto
+                {
+                    IdUsuario = usuario.IdUsuario,
+                    Correo = usuario.Correo,
+                    Nombre = usuario.Nombre,
+                    ApellidoPaterno = usuario.ApellidoPaterno,
+                    ApellidoMaterno = usuario.ApellidoMaterno,
+                    Calificacion = usuario.Calificacion,
+                    CveTipoUsuario = usuario.CveTipoUsuario,
+                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? ""
+                }
+            });
         }
-    
+
         private string GenerarToken(Usuario usuario)
         {
             // Claims — información que va dentro del token
