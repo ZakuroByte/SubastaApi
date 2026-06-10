@@ -1,0 +1,23 @@
+The following changes since commit 44688c48b9acf0534cd5009d140aec485d87d402:
+
+  feat: login y signup de comprador y vendedor conectados a la API (2026-06-07 00:42:20 -0600)
+
+are available in the Git repository at:
+
+  https://github.com/Bookedart/SubastaApi_Adrian.git fix/error-carga-imagenes
+
+for you to fetch changes up to 2dfae44aac0a21f3b789e597bc838d8e21d66d05:
+
+  fix: corregido error WebRootPath null al crear subasta sin imágenes, creacion de subastas (2026-06-09 17:49:12 -0600)
+
+----------------------------------------------------------------
+Jeremy (1):
+      fix: corregido error WebRootPath null al crear subasta sin imágenes, creacion de subastas
+
+ SubastaAd/package-lock.json          |  73 ++++++-
+ SubastaAd/package.json               |   2 +-
+ SubastaAd/src/App.jsx                |   2 +
+ SubastaAd/src/components/Navbar.jsx  |   2 +-
+ SubastaAd/src/pages/CrearSubasta.jsx | 394 +++++++++++++++++++++++++++++++++++
+ 5 files changed, 470 insertions(+), 3 deletions(-)
+ create mode 100644 SubastaAd/src/pages/CrearSubasta.jsx
