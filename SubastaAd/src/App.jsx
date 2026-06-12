@@ -8,25 +8,36 @@ import Navbar from './components/Navbar'
 import ActualizarDatos from './pages/ActualizarDatos'
 import CambiarContraseña from './pages/CambiarContraseña'
 import CrearSubasta from './pages/CrearSubasta'
+import Resultados from './pages/Resultados'
 
 function App() {
-  return (
-    <BrowserRouter>
-      <Navbar />
-      <div className="pt-14">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/signup-vendedor" element={<SignupVendedor />} />
-          <Route path="/detalles-usuario" element={<DetallesUsuario />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/actualizar-datos" element={<ActualizarDatos />} />
-          <Route path="/cambiar-contrasenia" element={<CambiarContraseña />} />
-          <Route path="/CrearSubasta" element={<CrearSubasta />} />
-        </Routes>
-      </div>
-    </BrowserRouter>
-  )
+    return (
+        <BrowserRouter>
+            <Routes>
+                {/* Rutas SIN navbar */}
+                <Route path="/" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/signup-vendedor" element={<SignupVendedor />} />
+
+                {/* Rutas CON navbar */}
+                <Route path="/*" element={
+                    <>
+                        <Navbar />
+                        <div className="pt-14">
+                            <Routes>
+                                <Route path="/home" element={<Home />} />
+                                <Route path="/resultados" element={<Resultados />} />
+                                <Route path="/detalles-usuario" element={<DetallesUsuario />} />
+                                <Route path="/actualizar-datos" element={<ActualizarDatos />} />
+                                <Route path="/cambiar-contrasenia" element={<CambiarContraseña />} />
+                                <Route path="/CrearSubasta" element={<CrearSubasta />} />
+                            </Routes>
+                        </div>
+                    </>
+                } />
+            </Routes>
+        </BrowserRouter>
+    )
 }
 
 export default App

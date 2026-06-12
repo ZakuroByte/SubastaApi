@@ -1,6 +1,9 @@
-import {useState, useEffect, useRef} from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function Navbar() {
+    const navigate = useNavigate()  // ← agrega esto
+    const [busqueda, setBusqueda] = useState('')  // ← agrega esto
     const token = localStorage.getItem('token')
     const idUsuario = localStorage.getItem('idUsuario')
 
@@ -86,16 +89,25 @@ function Navbar() {
             </div>
 
             {/* Barra de búsqueda */}
-            <div className="flex items-center w-2/4">
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault()
+                    if (busqueda.trim())
+                        navigate(`/resultados?nombre=${encodeURIComponent(busqueda.trim())}`)
+                }}
+                className="flex items-center w-2/4"
+            >
                 <input
                     type="text"
+                    value={busqueda}
+                    onChange={e => setBusqueda(e.target.value)}
                     placeholder="Buscar..."
                     className="outline-none text-sm w-full border border-gray-300 rounded-l-full px-4 py-2"
                 />
-                <button className="bg-blue-300 hover:bg-blue-300 px-3 py-2 rounded-r-full border border-blue-300">
+                <button type="submit" className="bg-blue-300 hover:bg-blue-300 px-3 py-2 rounded-r-full border border-blue-300">
                     <img src="/Lupa.png" alt="Lupa" className="w-5 h-5" />
                 </button>
-            </div>
+            </form>
 
             {/* Espacio flexible */}
             <div className="flex-1"></div>

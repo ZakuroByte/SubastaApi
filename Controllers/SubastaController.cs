@@ -395,5 +395,85 @@ namespace SubastaApi.Controllers
 
             return NoContent();
         }
+
+        // GET api/subasta/home
+        [HttpGet("home")]
+        public async Task<ActionResult> GetHome([FromQuery] int porPagina = 12)
+        {
+            if (porPagina < 1 || porPagina > 50) porPagina = 12;
+
+            var subastas = await _context.Subastas
+                .Include(s => s.ProductoRef)
+                    .ThenInclude(p => p!.Fotos)
+                .Include(s => s.TipoSubastaRef)
+                .Include(s => s.StatusSubastaRef)
+                .Where(s => s.CveStatusSubasta == 2 || s.CveStatusSubasta == 1)
+                .OrderByDescending(s => s.FechaInicio)
+                .Take(porPagina)
+                .ToListAsync();
+
+            return Ok(new { Datos = subastas });
+        }
+
+        // GET api/subasta/buscar?nombre=toyota&categoria=1&tipo=2&condicion=1&orden=recientes&pagina=1&porPagina=12
+        [HttpGet("buscar")]
+        public async Task<ActionResult> Buscar(
+            [FromQuery] string? nombre,
+            [FromQuery] int? categoria,
+            [FromQuery] int? tipo,
+            [FromQuery] int? condicion,
+            [FromQuery] string orden = "recientes",
+            [FromQuery] int pagina = 1,
+            [FromQuery] int porPagina = 12)
+        {
+            if (pagina < 1) pagina = 1;
+            if (porPagina < 1 || porPagina > 50) porPagina = 12;
+
+            var query = _context.Subastas
+                .Include(s => s.ProductoRef)
+                    .ThenInclude(p => p!.Fotos)
+                .Include(s => s.TipoSubastaRef)
+                .Include(s => s.StatusSubastaRef)
+                .Where(s => s.CveStatusSubasta == 2 || s.CveStatusSubasta == 1)
+                .AsQueryable();
+
+            // Filtros opcionales
+            if (!string.IsNullOrWhiteSpace(nombre))
+                query = query.Where(s => s.ProductoRef!.Nombre.ToLower().Contains(nombre.ToLower()));
+
+            if (categoria.HasValue)
+                query = query.Where(s => s.ProductoRef!.CveCategoria == categoria.Value);
+
+            if (tipo.HasValue)
+                query = query.Where(s => s.CveTipoSubasta == tipo.Value);
+
+            if (condicion.HasValue)
+                query = query.Where(s => s.ProductoRef!.CveCondicion == condicion.Value);
+
+            // Ordenamiento
+            query = orden switch
+            {
+                "precio_asc" => query.OrderBy(s => s.PrecioActual),
+                "precio_desc" => query.OrderByDescending(s => s.PrecioActual),
+                "cierre" => query.OrderBy(s => s.FechaFinal),
+                _ => query.OrderByDescending(s => s.FechaInicio) // "recientes"
+            };
+
+            var total = await query.CountAsync();
+
+            var subastas = await query
+                .Skip((pagina - 1) * porPagina)
+                .Take(porPagina)
+                .ToListAsync();
+
+            return Ok(new
+            {
+                Total = total,
+                Pagina = pagina,
+                PorPagina = porPagina,
+                TotalPaginas = (int)Math.Ceiling((double)total / porPagina),
+                Datos = subastas
+            });
+        }
     }
 }
