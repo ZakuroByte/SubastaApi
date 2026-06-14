@@ -25,6 +25,9 @@ function App() {
                         <Navbar />
                         <div className="pt-14">
                             <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/signup" element={<Signup />} />
+                                <Route path="/signup-vendedor" element={<SignupVendedor />} />
                                 <Route path="/home" element={<Home />} />
                                 <Route path="/resultados" element={<Resultados />} />
                                 <Route path="/detalles-usuario" element={<DetallesUsuario />} />

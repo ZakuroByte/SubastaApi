@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function Navbar() {
-    const navigate = useNavigate()  // ← agrega esto
-    const [busqueda, setBusqueda] = useState('')  // ← agrega esto
+    const navigate = useNavigate()
+    const [busqueda, setBusqueda] = useState('') 
     const token = localStorage.getItem('token')
     const idUsuario = localStorage.getItem('idUsuario')
 
