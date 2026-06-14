@@ -28,6 +28,8 @@ namespace SubastaApi.Controllers
         {
             var usuario = await _context.Usuarios
                 .Include(u => u.TipoUsuarioRef)
+                .Include(u => u.Productos)
+                    .ThenInclude(u => u.Subastas)
                 .FirstOrDefaultAsync(u => u.Correo == loginDto.Correo);
 
             if (usuario == null)
@@ -37,6 +39,10 @@ namespace SubastaApi.Controllers
 
             if (!passwordValida)
                 return Unauthorized("Credenciales incorrectas");
+            
+            var subastas = usuario.Productos
+                .SelectMany(p => p.Subastas)
+                .ToList();
 
             string token = GenerarToken(usuario);
 
@@ -52,7 +58,8 @@ namespace SubastaApi.Controllers
                     ApellidoMaterno = usuario.ApellidoMaterno,
                     Calificacion = usuario.Calificacion,
                     CveTipoUsuario = usuario.CveTipoUsuario,
-                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? ""
+                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? "",
+                    Subastas = subastas
                 }
             });
         }
@@ -90,7 +97,8 @@ namespace SubastaApi.Controllers
                     ApellidoMaterno = usuario.ApellidoMaterno,
                     Calificacion = usuario.Calificacion,
                     CveTipoUsuario = usuario.CveTipoUsuario,
-                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? ""
+                    TipoUsuario = usuario.TipoUsuarioRef?.Descripcion ?? "",
+                    Subastas = []
                 }
             });
         }

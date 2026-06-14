@@ -1,4 +1,6 @@
-﻿namespace SubastaApi.DTOs
+﻿using SubastaApi.Entidades;
+
+namespace SubastaApi.DTOs
 {
     public class UsuarioRespuestaDto
     {
@@ -10,5 +12,6 @@
         public int? Calificacion { get; set; }
         public int CveTipoUsuario { get; set; }
         public string TipoUsuario { get; set; } = "";
+        public List<Subasta> Subastas { get; set; } = new List<Subasta>();
     }
 }
