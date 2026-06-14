@@ -77,6 +77,7 @@ namespace SubastaApi.Controllers
         {
             var subastas = await _context.Subastas
                 .Include(s => s.ProductoRef)
+                .ThenInclude(s => s.Fotos)
                 .Include(s => s.TipoSubastaRef)
                 .Include(s => s.StatusSubastaRef)
                 .Where(s => s.ProductoRef!.CveUsuario == idUsuario)
