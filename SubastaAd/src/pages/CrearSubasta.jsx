@@ -2,7 +2,6 @@ import { useState } from 'react'
 import Navbar from '../components/Navbar'
 
 function CrearSubasta() {
-
     const idUsuario = localStorage.getItem('idUsuario')
     const token = localStorage.getItem('token')
 
@@ -12,7 +11,7 @@ function CrearSubasta() {
         { valor: 3, texto: 'Electrónicos' },
         { valor: 4, texto: 'Arte y coleccionables' },
         { valor: 5, texto: 'Antigüedades' },
-        { valor: 6, texto: 'Ropas y accesorios' },
+        { valor: 6, texto: 'Ropa y accesorios' },
         { valor: 7, texto: 'Artículos deportivos' },
         { valor: 8, texto: 'Libros' },
         { valor: 9, texto: 'Juguetes' },
@@ -33,50 +32,40 @@ function CrearSubasta() {
     ]
 
     const [form, setForm] = useState({
-        Nombre: '',
-        Descripcion: '',
-        Ubicacion: '',
-        CveCategoria: 3,
-        CveCondicion: 1,
-
-        Marca: '',
-        Modelo: '',
-        Anio: '',
-        Kilometraje: '',
-        NumeroSerie: '',
-        UrlDocumentacionVehiculo: '',
-
-        SuperficieTerreno: '',
-        SuperficieConstruida: '',
-        NumeroHabitaciones: '',
-        UrlDocumentacionInmueble: '',
-
-        PrecioInicial: '',
-        PrecioMinimo: '',
-        Incremento: '',
-
-        FechaInicio: '',
-        FechaFinal: '',
-
-        CveTipoSubasta: 1
+        Nombre: '', Descripcion: '', Ubicacion: '', CveCategoria: 3, CveCondicion: 1,
+        Marca: '', Modelo: '', Anio: '', Kilometraje: '', NumeroSerie: '', UrlDocumentacionVehiculo: '',
+        SuperficieTerreno: '', SuperficieConstruida: '', NumeroHabitaciones: '', UrlDocumentacionInmueble: '',
+        PrecioInicial: '', PrecioMinimo: '', Incremento: '', FechaInicio: '', FechaFinal: '', CveTipoSubasta: 1
     })
 
     const [fotos, setFotos] = useState([])
     const [loading, setLoading] = useState(false)
 
-    const handleChange = (e) => {
-        const { name, value, type } = e.target
+    // --- LÓGICA PARA RESTRICCIÓN DE FECHAS ---
+    const getFechasMinimas = () => {
+        const hoy = new Date()
+        const tzOffset = hoy.getTimezoneOffset() * 60000 // Ajuste de zona horaria local
+
+        // Fecha actual
+        const minInicio = new Date(hoy - tzOffset).toISOString().slice(0, 16)
         
-        if (name === 'CveCategoria' || name === 'CveCondicion' || name === 'CveTipoSubasta') {
-            setForm({
-                ...form,
-                [name]: parseInt(value)
-            })
+        // Fecha actual + 1 día
+        const manana = new Date(hoy)
+        manana.setDate(manana.getDate() + 1)
+        const minFinal = new Date(manana - tzOffset).toISOString().slice(0, 16)
+
+        return { minInicio, minFinal }
+    }
+
+    const { minInicio, minFinal } = getFechasMinimas()
+    // -----------------------------------------
+
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        if (['CveCategoria', 'CveCondicion', 'CveTipoSubasta'].includes(name)) {
+            setForm({ ...form, [name]: parseInt(value) })
         } else {
-            setForm({
-                ...form,
-                [name]: value
-            })
+            setForm({ ...form, [name]: value })
         }
     }
 
@@ -94,12 +83,24 @@ function CrearSubasta() {
             return
         }
 
+        // --- VALIDACIÓN DE FECHAS ANTES DE ENVIAR ---
+        if (form.FechaInicio < minInicio) {
+            alert('La fecha de inicio no puede ser menor a la fecha y hora actual.')
+            return
+        }
+
+        if (form.FechaFinal < minFinal) {
+            alert('La fecha final debe ser al menos 1 día mayor a la fecha actual.')
+            return
+        }
+        // --------------------------------------------
+
         setLoading(true)
 
         try {
             const formData = new FormData()
 
-            // Datos básicos requeridos
+            // Datos básicos
             formData.append('Nombre', form.Nombre)
             formData.append('Descripcion', form.Descripcion)
             formData.append('Ubicacion', form.Ubicacion)
@@ -107,21 +108,16 @@ function CrearSubasta() {
             formData.append('CveCondicion', form.CveCondicion)
             formData.append('CveUsuario', parseInt(idUsuario))
 
-            // Datos de subasta requeridos
+            // Datos de subasta
             formData.append('PrecioInicial', form.PrecioInicial)
             formData.append('FechaInicio', form.FechaInicio)
             formData.append('FechaFinal', form.FechaFinal)
             formData.append('CveTipoSubasta', form.CveTipoSubasta)
 
-            // Campos según tipo subasta
-            if (parseInt(form.CveTipoSubasta) === 1 && form.Incremento) {
-                formData.append('Incremento', form.Incremento)
-            }
-            if (parseInt(form.CveTipoSubasta) === 2 && form.PrecioMinimo) {
-                formData.append('PrecioMinimo', form.PrecioMinimo)
-            }
+            if (parseInt(form.CveTipoSubasta) === 1 && form.Incremento) formData.append('Incremento', form.Incremento)
+            if (parseInt(form.CveTipoSubasta) === 2 && form.PrecioMinimo) formData.append('PrecioMinimo', form.PrecioMinimo)
 
-            // Campos de vehículo
+            // Categorías específicas
             if (parseInt(form.CveCategoria) === 1) {
                 if (form.Marca) formData.append('Marca', form.Marca)
                 if (form.Modelo) formData.append('Modelo', form.Modelo)
@@ -131,7 +127,6 @@ function CrearSubasta() {
                 if (form.UrlDocumentacionVehiculo) formData.append('UrlDocumentacionVehiculo', form.UrlDocumentacionVehiculo)
             }
 
-            // Campos de inmueble
             if (parseInt(form.CveCategoria) === 2) {
                 if (form.SuperficieTerreno) formData.append('SuperficieTerreno', form.SuperficieTerreno)
                 if (form.SuperficieConstruida) formData.append('SuperficieConstruida', form.SuperficieConstruida)
@@ -139,25 +134,18 @@ function CrearSubasta() {
                 if (form.UrlDocumentacionInmueble) formData.append('UrlDocumentacionInmueble', form.UrlDocumentacionInmueble)
             }
 
-            // Fotos - Solo si hay fotos seleccionadas
+            // Fotos
             if (fotos.length > 0) {
                 fotos.forEach((foto) => {
                     formData.append('Fotos', foto, foto.name)
                 })
             }
 
-            console.log('Enviando formulario...')
-            
-            const response = await fetch(
-                'http://localhost:5288/api/Subasta/crear',
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: formData
-                }
-            )
+            const response = await fetch('http://localhost:5288/api/Subasta/crear', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            })
 
             if (response.ok) {
                 const data = await response.json()
@@ -165,225 +153,208 @@ function CrearSubasta() {
                 window.location.href = '/home'
             } else {
                 const error = await response.text()
-                console.error('Error:', error)
                 alert(`Error: ${error}`)
             }
 
         } catch (error) {
-            console.error('Error:', error)
             alert('No se pudo conectar con el servidor')
         } finally {
             setLoading(false)
         }
     }
 
+    // Clases CSS reutilizables para mantener consistencia
+    const inputClasses = "w-full border border-gray-300 rounded-md p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition-all bg-gray-50 focus:bg-white"
+    const labelClasses = "block text-sm font-semibold text-gray-700 mb-1"
+    const cardClasses = "bg-white rounded-lg shadow-sm border border-gray-200 p-6 md:p-8 mb-6"
+
     return (
         <>
             <Navbar />
 
-            <div className="min-h-screen bg-gray-100 pt-28 pb-10 px-4">
-                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8">
-                    <h1 className="text-3xl font-bold mb-8 text-gray-800">
-                        Crear Subasta
-                    </h1>
+            <div className="min-h-screen bg-[#ebebeb] pt-28 pb-12 px-4 sm:px-6">
+                <div className="max-w-3xl mx-auto">
+                    
+                    <div className="mb-8">
+                        <h1 className="text-2xl font-bold text-gray-900">Cuéntanos sobre tu artículo</h1>
+                        <p className="text-gray-600 mt-1">Completa los datos para publicar tu subasta.</p>
+                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="font-medium">Nombre *</label>
-                            <input
-                                type="text"
-                                name="Nombre"
-                                value={form.Nombre}
-                                onChange={handleChange}
-                                required
-                                className="w-full border rounded-lg p-3"
-                                placeholder="Nombre del artículo"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="font-medium">Descripción *</label>
-                            <textarea
-                                name="Descripcion"
-                                value={form.Descripcion}
-                                onChange={handleChange}
-                                required
-                                rows="4"
-                                className="w-full border rounded-lg p-3"
-                                placeholder="Describe el artículo"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="font-medium">Ubicación *</label>
-                            <input
-                                type="text"
-                                name="Ubicacion"
-                                value={form.Ubicacion}
-                                onChange={handleChange}
-                                required
-                                className="w-full border rounded-lg p-3"
-                                placeholder="Ciudad, Estado"
-                            />
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="font-medium">Categoría</label>
-                                <select
-                                    name="CveCategoria"
-                                    value={form.CveCategoria}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-lg p-3"
-                                >
-                                    {opcionesCategoria.map(opcion => (
-                                        <option key={opcion.valor} value={opcion.valor}>
-                                            {opcion.texto}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="font-medium">Condición</label>
-                                <select
-                                    name="CveCondicion"
-                                    value={form.CveCondicion}
-                                    onChange={handleChange}
-                                    className="w-full border rounded-lg p-3"
-                                >
-                                    {opcionesCondicion.map(opcion => (
-                                        <option key={opcion.valor} value={opcion.valor}>
-                                            {opcion.texto}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="font-medium">Fotografías (opcional)</label>
-                            <input
-                                type="file"
-                                multiple
-                                accept=".jpg,.jpeg,.png,.webp"
-                                onChange={handleFotos}
-                                className="w-full"
-                            />
-                            {fotos.length > 0 && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                    {fotos.length} archivo(s) seleccionado(s)
-                                </p>
-                            )}
-                        </div>
-
-                        {parseInt(form.CveCategoria) === 1 && (
-                            <div className="border-t pt-6 mt-6">
-                                <h3 className="text-lg font-semibold mb-4">Datos del Vehículo</h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="font-medium">Marca</label>
-                                        <input type="text" name="Marca" value={form.Marca} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Modelo</label>
-                                        <input type="text" name="Modelo" value={form.Modelo} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Año</label>
-                                        <input type="number" name="Anio" value={form.Anio} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Kilometraje</label>
-                                        <input type="number" name="Kilometraje" value={form.Kilometraje} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Número de Serie</label>
-                                        <input type="number" name="NumeroSerie" value={form.NumeroSerie} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Documentación (URL)</label>
-                                        <input type="text" name="UrlDocumentacionVehiculo" value={form.UrlDocumentacionVehiculo} onChange={handleChange} className="w-full border rounded-lg p-3" placeholder="https://..." />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {parseInt(form.CveCategoria) === 2 && (
-                            <div className="border-t pt-6 mt-6">
-                                <h3 className="text-lg font-semibold mb-4">Datos del Inmueble</h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="font-medium">Superficie Terreno (m²)</label>
-                                        <input type="number" step="0.01" name="SuperficieTerreno" value={form.SuperficieTerreno} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Superficie Construida (m²)</label>
-                                        <input type="number" step="0.01" name="SuperficieConstruida" value={form.SuperficieConstruida} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Número de Habitaciones</label>
-                                        <input type="number" name="NumeroHabitaciones" value={form.NumeroHabitaciones} onChange={handleChange} className="w-full border rounded-lg p-3" />
-                                    </div>
-                                    <div>
-                                        <label className="font-medium">Documentación (URL)</label>
-                                        <input type="text" name="UrlDocumentacionInmueble" value={form.UrlDocumentacionInmueble} onChange={handleChange} className="w-full border rounded-lg p-3" placeholder="https://..." />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="border-t pt-6 mt-6">
-                            <h3 className="text-lg font-semibold mb-4">Datos de la Subasta</h3>
-                            
-                            <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <form onSubmit={handleSubmit}>
+                        
+                        {/* SECCIÓN 1: Datos Principales */}
+                        <div className={cardClasses}>
+                            <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Datos principales</h2>
+                            <div className="space-y-5">
                                 <div>
-                                    <label className="font-medium">Tipo de Subasta</label>
-                                    <select name="CveTipoSubasta" value={form.CveTipoSubasta} onChange={handleChange} className="w-full border rounded-lg p-3">
+                                    <label className={labelClasses}>Título de la publicación *</label>
+                                    <input type="text" name="Nombre" value={form.Nombre} onChange={handleChange} required className={inputClasses} placeholder="Ej. iPhone 13 Pro Max 256GB" />
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>Descripción *</label>
+                                    <textarea name="Descripcion" value={form.Descripcion} onChange={handleChange} required rows="4" className={inputClasses} placeholder="Describe los detalles más importantes de tu artículo..." />
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>Ubicación *</label>
+                                    <input type="text" name="Ubicacion" value={form.Ubicacion} onChange={handleChange} required className={inputClasses} placeholder="Ej. Ciudad de México, CDMX" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SECCIÓN 2: Categoría y Estado */}
+                        <div className={cardClasses}>
+                            <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Clasificación</h2>
+                            <div className="grid md:grid-cols-2 gap-5">
+                                <div>
+                                    <label className={labelClasses}>Categoría</label>
+                                    <select name="CveCategoria" value={form.CveCategoria} onChange={handleChange} className={inputClasses}>
+                                        {opcionesCategoria.map(opcion => (
+                                            <option key={opcion.valor} value={opcion.valor}>{opcion.texto}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className={labelClasses}>Condición</label>
+                                    <select name="CveCondicion" value={form.CveCondicion} onChange={handleChange} className={inputClasses}>
+                                        {opcionesCondicion.map(opcion => (
+                                            <option key={opcion.valor} value={opcion.valor}>{opcion.texto}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SECCIÓN 3: Imágenes */}
+                        <div className={cardClasses}>
+                            <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Fotografías</h2>
+                            <div className="flex flex-col items-start gap-3">
+                                <p className="text-sm text-gray-600">Sube fotos claras y con buena iluminación para atraer más ofertas.</p>
+                                
+                                <label className="cursor-pointer inline-flex items-center justify-center px-6 py-3 border-2 border-dashed border-gray-300 rounded-md text-gray-700 bg-gray-50 hover:bg-gray-100 hover:border-gray-400 transition-all w-full sm:w-auto">
+                                    <svg className="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    <span className="font-medium">Subir Imagen</span>
+                                    <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" onChange={handleFotos} className="hidden" />
+                                </label>
+
+                                {fotos.length > 0 && (
+                                    <div className="mt-3 w-full bg-gray-50 p-3 rounded-md border border-gray-200">
+                                        <p className="text-sm font-semibold text-gray-700 mb-2">{fotos.length} archivo(s) seleccionado(s):</p>
+                                        <ul className="text-sm text-gray-600 space-y-1 list-disc pl-5">
+                                            {fotos.map((f, i) => <li key={i} className="truncate">{f.name}</li>)}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* SECCIÓN DINÁMICA: Vehículos */}
+                        {parseInt(form.CveCategoria) === 1 && (
+                            <div className={cardClasses}>
+                                <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Características del Vehículo</h2>
+                                <div className="grid md:grid-cols-2 gap-5">
+                                    <div><label className={labelClasses}>Marca</label><input type="text" name="Marca" value={form.Marca} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Modelo</label><input type="text" name="Modelo" value={form.Modelo} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Año</label><input type="number" name="Anio" value={form.Anio} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Kilometraje</label><input type="number" name="Kilometraje" value={form.Kilometraje} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Número de Serie</label><input type="number" name="NumeroSerie" value={form.NumeroSerie} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Documentación (URL)</label><input type="text" name="UrlDocumentacionVehiculo" value={form.UrlDocumentacionVehiculo} onChange={handleChange} className={inputClasses} placeholder="https://..." /></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SECCIÓN DINÁMICA: Inmuebles */}
+                        {parseInt(form.CveCategoria) === 2 && (
+                            <div className={cardClasses}>
+                                <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Detalles del Inmueble</h2>
+                                <div className="grid md:grid-cols-2 gap-5">
+                                    <div><label className={labelClasses}>Superficie Terreno (m²)</label><input type="number" step="0.01" name="SuperficieTerreno" value={form.SuperficieTerreno} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Superficie Construida (m²)</label><input type="number" step="0.01" name="SuperficieConstruida" value={form.SuperficieConstruida} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Número de Habitaciones</label><input type="number" name="NumeroHabitaciones" value={form.NumeroHabitaciones} onChange={handleChange} className={inputClasses} /></div>
+                                    <div><label className={labelClasses}>Documentación (URL)</label><input type="text" name="UrlDocumentacionInmueble" value={form.UrlDocumentacionInmueble} onChange={handleChange} className={inputClasses} placeholder="https://..." /></div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SECCIÓN 4: Condiciones de Subasta */}
+                        <div className={cardClasses}>
+                            <h2 className="text-lg font-bold text-gray-800 mb-5 border-b pb-2">Configuración de la Subasta</h2>
+                            
+                            <div className="grid md:grid-cols-2 gap-5 mb-5">
+                                <div>
+                                    <label className={labelClasses}>Tipo de Subasta</label>
+                                    <select name="CveTipoSubasta" value={form.CveTipoSubasta} onChange={handleChange} className={inputClasses}>
                                         {opcionesTipoSubasta.map(opcion => (
                                             <option key={opcion.valor} value={opcion.valor}>{opcion.texto}</option>
                                         ))}
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="font-medium">Precio Inicial *</label>
-                                    <input type="number" step="0.01" name="PrecioInicial" value={form.PrecioInicial} onChange={handleChange} required className="w-full border rounded-lg p-3" placeholder="0.00" />
+                                    <label className={labelClasses}>Precio Inicial *</label>
+                                    <div className="relative">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                                        <input type="number" step="0.01" name="PrecioInicial" value={form.PrecioInicial} onChange={handleChange} required className={`${inputClasses} pl-8`} placeholder="0.00" />
+                                    </div>
                                 </div>
                             </div>
 
                             {parseInt(form.CveTipoSubasta) === 1 && (
-                                <div className="mb-4">
-                                    <label className="font-medium">Incremento mínimo</label>
-                                    <input type="number" step="0.01" name="Incremento" value={form.Incremento} onChange={handleChange} className="w-full border rounded-lg p-3" placeholder="0.00" />
+                                <div className="mb-5">
+                                    <label className={labelClasses}>Incremento mínimo</label>
+                                    <div className="relative">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                                        <input type="number" step="0.01" name="Incremento" value={form.Incremento} onChange={handleChange} className={`${inputClasses} pl-8`} placeholder="0.00" />
+                                    </div>
                                 </div>
                             )}
 
                             {parseInt(form.CveTipoSubasta) === 2 && (
-                                <div className="mb-4">
-                                    <label className="font-medium">Precio Mínimo</label>
-                                    <input type="number" step="0.01" name="PrecioMinimo" value={form.PrecioMinimo} onChange={handleChange} className="w-full border rounded-lg p-3" placeholder="0.00" />
+                                <div className="mb-5">
+                                    <label className={labelClasses}>Precio Mínimo</label>
+                                    <div className="relative">
+                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                                        <input type="number" step="0.01" name="PrecioMinimo" value={form.PrecioMinimo} onChange={handleChange} className={`${inputClasses} pl-8`} placeholder="0.00" />
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="font-medium">Fecha de Inicio *</label>
-                                    <input type="datetime-local" name="FechaInicio" value={form.FechaInicio} onChange={handleChange} required className="w-full border rounded-lg p-3" />
+                                    <label className={labelClasses}>Fecha de Inicio *</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        name="FechaInicio" 
+                                        value={form.FechaInicio} 
+                                        onChange={handleChange} 
+                                        min={minInicio} 
+                                        required 
+                                        className={inputClasses} 
+                                    />
                                 </div>
                                 <div>
-                                    <label className="font-medium">Fecha de Finalización *</label>
-                                    <input type="datetime-local" name="FechaFinal" value={form.FechaFinal} onChange={handleChange} required className="w-full border rounded-lg p-3" />
+                                    <label className={labelClasses}>Fecha de Finalización *</label>
+                                    <input 
+                                        type="datetime-local" 
+                                        name="FechaFinal" 
+                                        value={form.FechaFinal} 
+                                        onChange={handleChange} 
+                                        min={minFinal} 
+                                        required 
+                                        className={inputClasses} 
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="bg-green-600 text-white px-6 py-3 rounded-full hover:opacity-80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Creando subasta...' : 'Crear Subasta'}
-                        </button>
+                        {/* BOTÓN FINAL */}
+                        <div className="flex justify-end mt-8">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="bg-green-900 text-white font-semibold px-8 py-4 rounded-md hover:bg-green-800 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed w-full sm:w-auto shadow-md"
+                            >
+                                {loading ? 'Publicando...' : 'Publicar Subasta'}
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
