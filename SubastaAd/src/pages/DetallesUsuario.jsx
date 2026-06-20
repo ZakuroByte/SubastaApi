@@ -60,7 +60,7 @@ function DetallesUsuario() {
 
         {/* Subastas (solo si es vendedor) */}
         {usuario.cveTipoUsuario === 2 && (
-            <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 mt-4">
+            <div className="bg-white w-full max-w-5xl rounded-xl shadow-lg p-6 mt-4">
                 <h3 className="text-md font-semibold text-gray-700 mb-4">Mis subastas</h3>
                 {(() => {
                     const activas = subastas.filter(
@@ -72,9 +72,9 @@ function DetallesUsuario() {
                     }
 
                     return (
-                        <div className="flex gap-4 flex-wrap">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                             {activas.map((subasta) => (
-                                <div key={subasta.idSubasta} className="bg-gray-100 rounded-lg p-4 w-36 flex flex-col items-center gap-2">
+                                <div key={subasta.idSubasta} className="bg-gray-100 rounded-lg p-4 flex flex-col items-center gap-2">
                                     <div className="w-20 h-20 bg-gray-300 rounded overflow-hidden flex items-center justify-center">
                                         <span className="text-2xl">📦</span>
                                     </div>
