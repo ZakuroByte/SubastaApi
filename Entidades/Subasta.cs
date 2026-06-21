@@ -22,7 +22,7 @@ namespace SubastaApi.Entidades
         public StatusSubasta? StatusSubastaRef { get; set; }
         public Usuario? UsuarioGanadorRef { get; set; }
         public Pago? PagoRef { get; set; }
-        public Calificacion? CalificacionRef { get; set; }
+        public ICollection<Calificacion> Calificaciones { get; set; } = [];
         public ICollection<Oferta> Ofertas { get; set; } = [];
         public ICollection<Notificacion> Notificaciones { get; set; } = [];
         

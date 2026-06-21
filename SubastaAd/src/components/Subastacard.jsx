@@ -3,7 +3,6 @@ function SubastaCard({ subasta }) {
     const foto = subasta.productoRef?.fotos?.[0]?.url;
     const nombre = subasta.productoRef?.nombre ?? "Sin nombre";
     const tipo = subasta.tipoSubastaRef?.descripcion ?? "";
-    const status = subasta.statusSubastaRef?.descripcion ?? "";
 
     const fechaFinal = new Date(subasta.fechaFinal);
     const ahora = new Date();

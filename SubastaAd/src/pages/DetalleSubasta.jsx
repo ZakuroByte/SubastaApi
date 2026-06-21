@@ -513,10 +513,19 @@ function DetalleSubasta() {
                             )}
                         </div>
                     )}
+                    {/* Comprador — ir a pagar */}
                     {subasta.cveStatusSubasta === 3 && subasta.cveUsuarioGanador === idUsuario && (
                         <button onClick={() => navigate(`/pago/${subasta.idSubasta}`)}
                             className="w-full bg-blue-600 text-white py-2.5 rounded-full text-sm font-medium hover:opacity-75 transition-all">
                             💳 Ir a pagar
+                        </button>
+                    )}
+
+                    {/* Vendedor — ir a calificar */}
+                    {subasta.cveStatusSubasta === 3 && subasta.productoRef?.cveUsuario === idUsuario && (
+                        <button onClick={() => navigate(`/pago/${subasta.idSubasta}`)}
+                            className="w-full bg-yellow-400 text-yellow-900 py-2.5 rounded-full text-sm font-medium hover:opacity-80 transition-all">
+                            ★ Ver pago y calificar
                         </button>
                     )}
                 </div>

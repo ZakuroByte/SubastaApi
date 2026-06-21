@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SubastaApi.Data;
 
@@ -11,9 +12,11 @@ using SubastaApi.Data;
 namespace SubastaApi.Migrations
 {
     [DbContext(typeof(SubastaDbContext))]
-    partial class SubastaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260621212908_FixCalificacionRelacion")]
+    partial class FixCalificacionRelacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

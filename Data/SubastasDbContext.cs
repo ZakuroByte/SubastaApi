@@ -46,10 +46,10 @@ namespace SubastaApi.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Calificacion>()
-                .HasOne(c => c.SubastaRef)
-                .WithOne(s => s.CalificacionRef)
-                .HasForeignKey<Calificacion>(c => c.CveSubasta)
-                .OnDelete(DeleteBehavior.Restrict);    
+            .HasOne(c => c.SubastaRef)
+            .WithMany(s => s.Calificaciones)  // ← cambiar WithOne por WithMany
+            .HasForeignKey(c => c.CveSubasta)
+            .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Categoria>()
             .HasKey(c => c.IdCategoria);

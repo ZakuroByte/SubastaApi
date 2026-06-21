@@ -76,7 +76,7 @@ namespace SubastaApi.Controllers
         public async Task<ActionResult<IEnumerable<Subasta>>> GetByVendedor(int idUsuario)
         {
             var subastas = await _context.Subastas
-                .Include(s => s.ProductoRef)
+                .Include(s => s.ProductoRef)    
                 .ThenInclude(s => s.Fotos)
                 .Include(s => s.TipoSubastaRef)
                 .Include(s => s.StatusSubastaRef)

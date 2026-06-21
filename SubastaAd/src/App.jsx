@@ -17,7 +17,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 {/* Rutas SIN navbar */}
-                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} /> 
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/signup-vendedor" element={<SignupVendedor />} />
 
