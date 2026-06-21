@@ -9,6 +9,8 @@ import ActualizarDatos from './pages/ActualizarDatos'
 import CambiarContraseña from './pages/CambiarContraseña'
 import CrearSubasta from './pages/CrearSubasta'
 import Resultados from './pages/Resultados'
+import DetalleSubasta from './pages/DetalleSubasta'
+import PagoSubasta from './pages/PagoSubasta'
 
 function App() {
     return (
@@ -34,6 +36,8 @@ function App() {
                                 <Route path="/actualizar-datos" element={<ActualizarDatos />} />
                                 <Route path="/cambiar-contrasenia" element={<CambiarContraseña />} />
                                 <Route path="/CrearSubasta" element={<CrearSubasta />} />
+                                <Route path="/subasta/:id" element={<DetalleSubasta />} />
+                                <Route path="/pago/:id" element={<PagoSubasta />} />
                             </Routes>
                         </div>
                     </>

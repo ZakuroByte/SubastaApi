@@ -6,6 +6,7 @@ function Navbar() {
     const [busqueda, setBusqueda] = useState('') 
     const token = localStorage.getItem('token')
     const idUsuario = localStorage.getItem('idUsuario')
+    const tipoUsuario = localStorage.getItem('tipoUsuario')
 
     const [notificaciones, setNotificaciones] = useState([])
     const [noLeidas, setNoLeidas] = useState(0)
@@ -117,12 +118,13 @@ function Navbar() {
                 <div className="flex items-center gap-4">
 
                     {/* Crear subasta */}
-                    <button
-                        onClick={() => window.location.href = '/CrearSubasta'}
-                        className="bg-green-600 text-white px-4 py-2 rounded-full hover:opacity-75 transition-all"                    
-                    >
-                        Crear subasta
-                    </button>
+                    {
+                        tipoUsuario =='Vendedor' &&  (
+                            <button onClick={() => window.location.href = '/CrearSubasta'} className="bg-green-600 text-white px-4 py-2 rounded-full hover:opacity-75 transition-all">
+                                Crear subasta
+                            </button>
+                        )
+                    }
 
                     {/* Notificaciones */}
                     <div className="relative" ref={refNotif}>

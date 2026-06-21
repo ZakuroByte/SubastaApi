@@ -25,6 +25,7 @@ function Login() {
         console.log(data)
         localStorage.setItem('token', data.token)
         localStorage.setItem('idUsuario', data.usuario.idUsuario)
+        localStorage.setItem('tipoUsuario', data.usuario.tipoUsuario)
         window.location.href = '/home'
       } else {
         alert('Correo o contraseña incorrectos')
