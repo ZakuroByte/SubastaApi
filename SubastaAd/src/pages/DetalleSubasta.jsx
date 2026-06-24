@@ -16,6 +16,8 @@ function DetalleSubasta() {
     const [error, setError] = useState('')
     const [exito, setExito] = useState('')
     const [fotoActiva, setFotoActiva] = useState(0)
+    const [cancelando, setCancelando] = useState(false)
+    const [mostrarConfirmCancel, setMostrarConfirmCancel] = useState(false)
 
     const intervalRef = useRef(null)
 
@@ -168,6 +170,31 @@ function DetalleSubasta() {
         }
     }
 
+    // Cancelar subasta (solo vendedor, solo Pendiente, dentro de 30 min)
+    const cancelarSubasta = async () => {
+        setMostrarConfirmCancel(false)
+        setError('')
+        setExito('')
+        setCancelando(true)
+
+        const res = await fetch(`http://localhost:5288/api/Subasta/${id}/cancelar`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        setCancelando(false)
+
+        if (res.ok) {
+            setExito('Subasta cancelada correctamente.')
+            const updated = await fetch(`http://localhost:5288/api/Subasta/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(r => r.json())
+            setSubasta(updated)
+        } else {
+            const msg = await res.text()
+            setError(msg || 'No se pudo cancelar la subasta.')
+        }
+    }
+
     const tipoLabel = (cve) => {
         if (cve === 1) return 'Inglesa'
         if (cve === 2) return 'Holandesa'
@@ -192,8 +219,10 @@ function DetalleSubasta() {
 
     const esVendedor = subasta?.productoRef?.cveUsuario === idUsuario
     const estaActiva = subasta?.cveStatusSubasta === 2
+    const estaPendiente = subasta?.cveStatusSubasta === 1
     const tiempoTerminado = tiempoRestante?.h === '00' && tiempoRestante?.m === '00' && tiempoRestante?.s === '00'
     const puedeOfertar = token && !esVendedor && estaActiva && !tiempoTerminado
+    const puedeCancelar = token && esVendedor && estaPendiente
 
     if (loading) return (
         <div className="flex justify-center items-center min-h-screen">
@@ -434,6 +463,44 @@ function DetalleSubasta() {
                     {esVendedor && (
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-sm text-gray-500 text-center">
                             Eres el vendedor de esta subasta
+                        </div>
+                    )}
+
+                    {/* Botón cancelar subasta — solo vendedor, solo Pendiente */}
+                    {puedeCancelar && (
+                        <button
+                            onClick={() => setMostrarConfirmCancel(true)}
+                            disabled={cancelando}
+                            className="w-full bg-red-50 border border-red-200 text-red-600 py-2.5 rounded-full text-sm font-medium hover:bg-red-100 transition-all disabled:opacity-50"
+                        >
+                            {cancelando ? 'Cancelando...' : '✕ Cancelar subasta'}
+                        </button>
+                    )}
+
+                    {/* Modal de confirmación */}
+                    {mostrarConfirmCancel && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+                            <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
+                                <h3 className="text-base font-semibold text-gray-800 mb-2">¿Cancelar subasta?</h3>
+                                <p className="text-sm text-gray-500 mb-5">
+                                    Esta acción solo está disponible dentro de los primeros 30 minutos desde la publicación.
+                                    El producto volverá a estar disponible.
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setMostrarConfirmCancel(false)}
+                                        className="flex-1 border border-gray-200 text-gray-600 py-2 rounded-full text-sm hover:bg-gray-50 transition-all"
+                                    >
+                                        No, mantener
+                                    </button>
+                                    <button
+                                        onClick={cancelarSubasta}
+                                        className="flex-1 bg-red-600 text-white py-2 rounded-full text-sm font-medium hover:opacity-75 transition-all"
+                                    >
+                                        Sí, cancelar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
